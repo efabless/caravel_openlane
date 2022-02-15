@@ -41,17 +41,6 @@ COPY ./corners.yml ./corners.yml
 COPY ./make_timing.py ./make_timing.py
 RUN python3 ./make_timing.py
 
-ARG MAGIC_REPO
-ARG MAGIC_COMMIT
-
-WORKDIR /magic
-RUN yum groupinstall -y 'Development Tools'
-RUN yum install -y tcl-devel tk-devel
-RUN curl -L ${MAGIC_REPO}/tarball/${MAGIC_COMMIT} | tar -xzC . --strip-components=1 && \
-    ./configure --prefix=/usr && \
-    make && \
-    make install
-
 ARG OPEN_PDKS_REPO
 ARG OPEN_PDKS_COMMIT
 
@@ -62,12 +51,15 @@ RUN curl -L ${OPEN_PDKS_REPO}/tarball/${OPEN_PDKS_COMMIT} | tar -xzC . --strip-c
     ./configure --prefix=/usr && \
     make -j$(nproc) && \
     make install
-RUN ./configure --enable-sky130-pdk=${PDK_ROOT}/skywater-pdk/libraries --enable-sram-sky130
+RUN ./configure --enable-sky130-pdk=${PDK_ROOT}/skywater-pdk --enable-sram-sky130
+
 WORKDIR ${PDK_ROOT}/open_pdks/sky130
 RUN make alpha-repo xschem-repo sram-repo 2>&1 | tee /build/pdk_prereq.log
-RUN make 2>&1 | tee /build/pdk.log > /dev/null
+RUN make -j$(nproc) 2>&1 | tee /build/pdk.log
 RUN make SHARED_PDKS_PATH=${PDK_ROOT} install
 
+ARG MAGIC_REPO
+ARG MAGIC_COMMIT
 RUN printf "skywater-pdk ${SKY130_COMMIT}" > ${PDK_ROOT}/sky130A/SOURCES
 RUN printf "magic ${MAGIC_COMMIT}" >> ${PDK_ROOT}/sky130A/SOURCES
 RUN printf "open_pdks ${OPEN_PDKS_COMMIT}" >> ${PDK_ROOT}/sky130A/SOURCES
