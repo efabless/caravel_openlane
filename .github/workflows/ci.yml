@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    tags:        
+      - '*'  
+
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Export OpenLane Repo Name
+        run: |
+          echo "OPENLANE_REPO_NAME=$(make ol_repo_name)" >> $GITHUB_ENV
+
+      - name: Export OpenLane Image Name
+        run: |
+          echo "OPENLANE_IMAGE_NAME=$(make ol_image_name)" >> $GITHUB_ENV
+
+      - name: Get Tag
+        run: |
+          echo TAG="$(ruby -e "print '$GITHUB_REF'.split('/')[2]")" >> $GITHUB_ENV
+
+      - name: Build the Image
+        run: make 
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Docker Push (Branch Name)
+        run: |
+          docker tag ${{ env.OPENLANE_IMAGE_NAME }} ${{ env.OPENLANE_REPO_NAME }}:${{ env.TAG }}
+          docker push ${{ env.OPENLANE_IMAGE_NAME }}
+          docker push ${{ env.OPENLANE_REPO_NAME }}:${{ env.TAG }}
