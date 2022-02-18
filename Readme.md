@@ -6,4 +6,4 @@ This is a version of the OpenLane container with elements of the PDK required to
 # License
 You may use and redistribute this code under the terms of the Apache License, version 2.0. See `License` for more. Other tools may fall under stricter licenses.
 
-* On that note: Tachyon Design Automation Corp. CVC is proprietary and is cost-free to redistribute with open source software and to use for non-commercial projects.
+* On that note: Tachyon Design Automation Corp. CVC is under a non-standard license not approved by either the FSF or OSI. It is cost-free to redistribute with open source software and you may use it for commercial and noncommercial designs.
